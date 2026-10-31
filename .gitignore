@@ -1,0 +1,62 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# User-specific Xcode files
+xcuserdata/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
+!*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+# CocoaPods
+Pods/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Sparkle signing keys (NEVER commit these!)
+.sparkle-keys/
+Config/LocalSecrets.xcconfig
+Config/Local.xcconfig
+Config/Distribution.local.json
+
+# Release artifacts
+releases/*
+!releases/notes/
+releases/notes/*
+!releases/notes/*.md
+
+# Xcode backup
+*.xcodeproj.backup/
+CLAUDE.md
+.omx/
+
+# Local migration/build evidence and credentials
+*.profraw
+*.profdata
+__pycache__/
+*.p12
+*.mobileprovision
+.env
+.env.*
+!.env.example
