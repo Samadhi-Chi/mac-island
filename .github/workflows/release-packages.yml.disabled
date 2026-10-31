@@ -1,0 +1,519 @@
+name: Release Packages
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing git tag to package into a GitHub Release, for example v1.2.3
+        required: true
+        type: string
+      draft:
+        description: Keep the GitHub Release in draft state
+        required: false
+        default: true
+        type: boolean
+      prerelease:
+        description: Mark the GitHub Release as a prerelease
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-packages-${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux-bridge:
+    name: Build Linux remote bridge
+    runs-on: ${{ matrix.runner }}
+    container: swift:6.1.3-jammy
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            artifact_arch: x86_64
+            swift_sdk: x86_64-swift-linux-musl
+          - runner: ubuntu-24.04-arm
+            artifact_arch: aarch64
+            swift_sdk: aarch64-swift-linux-musl
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Build Linux PingIslandBridge
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          static_sdk_url="https://download.swift.org/swift-6.1.3-release/static-sdk/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz"
+          static_sdk_checksum="7a741da46ce64cdbd6dd504a2617b211b88e7f66a9ada7ea4e55bcc9c06ff2b2"
+          swift sdk install "$static_sdk_url" --checksum "$static_sdk_checksum"
+
+          swift build --package-path Prototype -c release --swift-sdk "${{ matrix.swift_sdk }}" --product PingIslandBridge
+
+          bridge_path="Prototype/.build/${{ matrix.swift_sdk }}/release/PingIslandBridge"
+          if command -v file >/dev/null 2>&1; then
+            file "$bridge_path"
+          fi
+          ldd_output="$(ldd "$bridge_path" 2>&1 || true)"
+          printf '%s\n' "$ldd_output"
+          if printf '%s\n' "$ldd_output" | grep -Eq 'libswift|libc\.so|ld-linux|GLIBC_'; then
+            echo "::error::Linux PingIslandBridge must be a musl static executable without glibc or Swift shared-library dependencies"
+            exit 1
+          fi
+
+          mkdir -p releases/unsigned
+          bridge_name="PingIslandBridge-linux-musl-${{ matrix.artifact_arch }}"
+          cp "$bridge_path" "releases/unsigned/$bridge_name"
+          chmod +x "releases/unsigned/$bridge_name"
+          (
+            cd releases/unsigned
+            python3 -m zipfile -c "$bridge_name.zip" "$bridge_name"
+          )
+          rm -f "releases/unsigned/$bridge_name"
+
+      - name: Upload Linux bridge artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PingIslandBridge-linux-musl-${{ matrix.artifact_arch }}.zip
+          path: releases/unsigned/PingIslandBridge-linux-musl-${{ matrix.artifact_arch }}.zip
+          if-no-files-found: error
+
+  release:
+    name: Build signed packages
+    needs: linux-bridge
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      RELEASE_DRAFT: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.draft) || 'true' }}
+      RELEASE_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || 'false' }}
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Validate release signing secrets
+        id: validate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          SPARKLE_APPCAST_URL: ${{ secrets.SPARKLE_APPCAST_URL }}
+          SPARKLE_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
+          SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
+          PING_ISLAND_TELEMETRY_SLS_HOST: ${{ secrets.PING_ISLAND_TELEMETRY_SLS_HOST }}
+          PING_ISLAND_TELEMETRY_SLS_PROJECT: ${{ secrets.PING_ISLAND_TELEMETRY_SLS_PROJECT }}
+          PING_ISLAND_TELEMETRY_SLS_LOGSTORE: ${{ secrets.PING_ISLAND_TELEMETRY_SLS_LOGSTORE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required=(
+            BUILD_CERTIFICATE_BASE64
+            P12_PASSWORD
+            KEYCHAIN_PASSWORD
+            APPLE_ID
+            APPLE_TEAM_ID
+            APPLE_APP_SPECIFIC_PASSWORD
+          )
+
+          for name in "${required[@]}"; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing required repository secret: $name"
+              exit 1
+            fi
+          done
+
+          sparkle_names=(
+            SPARKLE_APPCAST_URL
+            SPARKLE_PUBLIC_ED_KEY
+            SPARKLE_PRIVATE_ED_KEY
+          )
+          sparkle_count=0
+          for name in "${sparkle_names[@]}"; do
+            if [ -n "${!name:-}" ]; then
+              sparkle_count=$((sparkle_count + 1))
+            fi
+          done
+
+          if [ "$sparkle_count" -ne 0 ] && [ "$sparkle_count" -ne "${#sparkle_names[@]}" ]; then
+            echo "::error::SPARKLE_APPCAST_URL, SPARKLE_PUBLIC_ED_KEY, and SPARKLE_PRIVATE_ED_KEY must all be set together"
+            exit 1
+          fi
+
+          if [ "$sparkle_count" -eq "${#sparkle_names[@]}" ]; then
+            echo "sparkle_enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "sparkle_enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          telemetry_names=(
+            PING_ISLAND_TELEMETRY_SLS_HOST
+            PING_ISLAND_TELEMETRY_SLS_PROJECT
+            PING_ISLAND_TELEMETRY_SLS_LOGSTORE
+          )
+          telemetry_count=0
+          for name in "${telemetry_names[@]}"; do
+            if [ -n "${!name:-}" ]; then
+              telemetry_count=$((telemetry_count + 1))
+            fi
+          done
+
+          if [ "$telemetry_count" -ne 0 ] && [ "$telemetry_count" -ne "${#telemetry_names[@]}" ]; then
+            echo "::error::PING_ISLAND_TELEMETRY_SLS_HOST, PING_ISLAND_TELEMETRY_SLS_PROJECT, and PING_ISLAND_TELEMETRY_SLS_LOGSTORE must all be set together"
+            exit 1
+          fi
+
+          if [ "$telemetry_count" -eq "${#telemetry_names[@]}" ]; then
+            echo "telemetry_enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "telemetry_enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Import Developer ID certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cert_path="$RUNNER_TEMP/build_certificate.p12"
+          keychain_path="$RUNNER_TEMP/ping-island-signing.keychain-db"
+
+          if ! echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$cert_path" 2>/dev/null; then
+            echo "$BUILD_CERTIFICATE_BASE64" | base64 -D > "$cert_path"
+          fi
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security import "$cert_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$keychain_path"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security default-keychain -s "$keychain_path"
+
+          existing_keychains=$(security list-keychains -d user | tr -d '"' | xargs)
+          security list-keychains -d user -s "$keychain_path" $existing_keychains
+          security find-identity -v -p codesigning "$keychain_path"
+
+      - name: Inject release config
+        shell: bash
+        env:
+          SPARKLE_APPCAST_URL: ${{ secrets.SPARKLE_APPCAST_URL }}
+          SPARKLE_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
+          PING_ISLAND_TELEMETRY_SLS_HOST: ${{ secrets.PING_ISLAND_TELEMETRY_SLS_HOST }}
+          PING_ISLAND_TELEMETRY_SLS_PROJECT: ${{ secrets.PING_ISLAND_TELEMETRY_SLS_PROJECT }}
+          PING_ISLAND_TELEMETRY_SLS_LOGSTORE: ${{ secrets.PING_ISLAND_TELEMETRY_SLS_LOGSTORE }}
+        run: |
+          set -euo pipefail
+
+          local_secrets="Config/LocalSecrets.xcconfig"
+          wrote_config=false
+          : > "$local_secrets"
+
+          if [ -n "${SPARKLE_APPCAST_URL:-}" ] && [ -n "${SPARKLE_PUBLIC_ED_KEY:-}" ]; then
+            printf '_XC_SLASH = /\nSPARKLE_APPCAST_URL = %s$(_XC_SLASH)/%s\nSPARKLE_PUBLIC_ED_KEY = %s\n' \
+              "${SPARKLE_APPCAST_URL%%//*}" \
+              "${SPARKLE_APPCAST_URL#*//}" \
+              "$SPARKLE_PUBLIC_ED_KEY" \
+              >> "$local_secrets"
+            wrote_config=true
+          fi
+
+          if [ -n "${PING_ISLAND_TELEMETRY_SLS_HOST:-}" ] &&
+             [ -n "${PING_ISLAND_TELEMETRY_SLS_PROJECT:-}" ] &&
+             [ -n "${PING_ISLAND_TELEMETRY_SLS_LOGSTORE:-}" ]; then
+            if [ "$wrote_config" = "true" ]; then
+              printf '\n' >> "$local_secrets"
+            fi
+            printf 'PING_ISLAND_TELEMETRY_SLS_HOST = %s\nPING_ISLAND_TELEMETRY_SLS_PROJECT = %s\nPING_ISLAND_TELEMETRY_SLS_LOGSTORE = %s\n' \
+              "$PING_ISLAND_TELEMETRY_SLS_HOST" \
+              "$PING_ISLAND_TELEMETRY_SLS_PROJECT" \
+              "$PING_ISLAND_TELEMETRY_SLS_LOGSTORE" \
+              >> "$local_secrets"
+            wrote_config=true
+          fi
+
+          if [ "$wrote_config" != "true" ]; then
+            rm -f "$local_secrets"
+            echo "Release config not provided; skipping LocalSecrets.xcconfig injection."
+            exit 0
+          fi
+
+          echo "Injected release-only configuration into LocalSecrets.xcconfig."
+
+      - name: Write Sparkle private key
+        id: sparkle_private_key
+        if: ${{ steps.validate.outputs.sparkle_enabled == 'true' }}
+        shell: bash
+        env:
+          SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
+        run: |
+          set -euo pipefail
+
+          private_key_path="$RUNNER_TEMP/sparkle_private_ed_key"
+          printf '%s' "$SPARKLE_PRIVATE_ED_KEY" > "$private_key_path"
+          chmod 600 "$private_key_path"
+          echo "path=$private_key_path" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed DMG and ZIP packages
+        env:
+          PING_ISLAND_BUILD_DIR: ${{ github.workspace }}/build/release
+          PING_ISLAND_RELEASE_DIR: ${{ github.workspace }}/releases/signed
+          PING_ISLAND_DMG_BACKGROUND_SOURCE: ${{ github.workspace }}/docs/images/ping-island-dmg-installer-background.png
+          PING_ISLAND_DMG_LOGO_SOURCE: ${{ github.workspace }}/docs/images/ping-island-icon-transparent.svg
+          PING_ISLAND_KEYCHAIN_PATH: ${{ runner.temp }}/ping-island-signing.keychain-db
+          PING_ISLAND_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          PING_ISLAND_NOTARY_APPLE_ID: ${{ secrets.APPLE_ID }}
+          PING_ISLAND_NOTARY_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          PING_ISLAND_NOTARY_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ steps.validate.outputs.sparkle_enabled }}" = "true" ]; then
+            export PING_ISLAND_GENERATE_APPCAST=1
+            export PING_ISLAND_SPARKLE_PRIVATE_KEY_PATH="${{ steps.sparkle_private_key.outputs.path }}"
+          fi
+
+          ./scripts/package-release.sh
+
+      - name: Download Linux bridge artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: releases/bridge
+          pattern: PingIslandBridge-linux-musl-*.zip
+          merge-multiple: true
+
+      - name: Collect release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          dmg_assets=(releases/signed/*.dmg)
+          zip_assets=(releases/signed/*.zip)
+          notes_assets=(releases/signed/*.md)
+          appcast_assets=(releases/signed/appcast/*.xml)
+          linux_bridge_assets=(releases/bridge/PingIslandBridge-linux-musl-*.zip)
+
+          if [ "${#dmg_assets[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one DMG asset in releases/signed, found ${#dmg_assets[@]}"
+            exit 1
+          fi
+
+          if [ "${#zip_assets[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one ZIP asset in releases/signed, found ${#zip_assets[@]}"
+            exit 1
+          fi
+
+          app_path="build/release/export/Ping Island.app"
+          if [ "${#linux_bridge_assets[@]}" -lt 1 ]; then
+            echo "::error::Expected at least one Linux bridge asset in releases/bridge, found ${#linux_bridge_assets[@]}"
+            exit 1
+          fi
+          if [ ! -d "$app_path" ]; then
+            echo "::error::Expected built app bundle at $app_path"
+            exit 1
+          fi
+
+          version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$app_path/Contents/Info.plist")
+          build=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$app_path/Contents/Info.plist")
+          expected_tag="v$version"
+          notes_path="releases/notes/$version.md"
+
+          if [ "$RELEASE_TAG" != "$expected_tag" ]; then
+            echo "::error::Release tag $RELEASE_TAG does not match app version $version"
+            exit 1
+          fi
+
+          if [ -f "$notes_path" ]; then
+            has_notes=true
+          else
+            has_notes=false
+          fi
+
+          if [ "${#notes_assets[@]}" -gt 1 ]; then
+            echo "::error::Expected at most one top-level Markdown release notes asset in releases/signed, found ${#notes_assets[@]}"
+            exit 1
+          fi
+
+          if [ "${#appcast_assets[@]}" -gt 1 ]; then
+            echo "::error::Expected at most one appcast asset in releases/signed/appcast, found ${#appcast_assets[@]}"
+            exit 1
+          fi
+
+          if [ "${#notes_assets[@]}" -eq 1 ]; then
+            has_notes_asset=true
+            notes_asset_path="${notes_assets[0]}"
+          else
+            has_notes_asset=false
+            notes_asset_path=
+          fi
+
+          if [ "${#appcast_assets[@]}" -eq 1 ]; then
+            has_appcast=true
+            appcast_path="${appcast_assets[0]}"
+          else
+            has_appcast=false
+            appcast_path=
+          fi
+
+          {
+            echo "version=$version"
+            echo "build=$build"
+            echo "dmg_path=${dmg_assets[0]}"
+            echo "zip_path=${zip_assets[0]}"
+            printf 'linux_bridge_paths<<__PING_ISLAND_EOF__\n'
+            printf '%s\n' "${linux_bridge_assets[@]}"
+            printf '__PING_ISLAND_EOF__\n'
+            echo "notes_path=$notes_path"
+            echo "has_notes=$has_notes"
+            echo "notes_asset_path=$notes_asset_path"
+            echo "has_notes_asset=$has_notes_asset"
+            echo "appcast_path=$appcast_path"
+            echo "has_appcast=$has_appcast"
+            echo "release_title=Ping Island $RELEASE_TAG"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload signed macOS packages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PingIsland-signed-packages-${{ steps.meta.outputs.version }}
+          path: |
+            ${{ steps.meta.outputs.dmg_path }}
+            ${{ steps.meta.outputs.zip_path }}
+          if-no-files-found: error
+
+      - name: Prepare release notes body
+        id: notes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          notes_file="$RUNNER_TEMP/release-notes.md"
+          release_block='> Built, signed with Developer ID, and notarized on GitHub Actions.'
+
+          if [ "${{ steps.meta.outputs.has_notes }}" = "true" ]; then
+            cp "${{ steps.meta.outputs.notes_path }}" "$notes_file"
+            printf '\n\n%s\n' "$release_block" >> "$notes_file"
+          else
+            linux_bridge_lines=
+            while IFS= read -r asset; do
+              [ -n "$asset" ] || continue
+              linux_bridge_lines="${linux_bridge_lines}- $(basename "$asset")"$'\n'
+            done <<< "${{ steps.meta.outputs.linux_bridge_paths }}"
+
+            printf 'Release build for %s.\n\nIncluded assets:\n- %s (recommended for manual install)\n- %s (kept for update/distribution workflows)\n%s\n%s\n' \
+              "$RELEASE_TAG" \
+              "$(basename "${{ steps.meta.outputs.dmg_path }}")" \
+              "$(basename "${{ steps.meta.outputs.zip_path }}")" \
+              "$linux_bridge_lines" \
+              "$release_block" \
+              > "$notes_file"
+          fi
+
+          echo "file=$notes_file" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          repo="$GITHUB_REPOSITORY"
+
+          retry() {
+            local attempts=0
+            local max_attempts=3
+            local delay=5
+
+            until "$@"; do
+              attempts=$((attempts + 1))
+              if [ "$attempts" -ge "$max_attempts" ]; then
+                return 1
+              fi
+
+              sleep "$delay"
+              delay=$((delay * 2))
+            done
+          }
+
+          ensure_release_exists() {
+            gh release view "$RELEASE_TAG" --repo "$repo" >/dev/null 2>&1 && return 0
+
+            # Create the release as a draft first so a failed asset upload can be resumed
+            # by rerunning the workflow instead of leaving gh release create half-finished.
+            gh release create "$RELEASE_TAG" \
+              --repo "$repo" \
+              --verify-tag \
+              --draft \
+              --title "${{ steps.meta.outputs.release_title }}" \
+              --notes-file "${{ steps.notes.outputs.file }}"
+          }
+
+          retry ensure_release_exists
+
+          assets=(
+            "${{ steps.meta.outputs.dmg_path }}"
+            "${{ steps.meta.outputs.zip_path }}"
+          )
+
+          while IFS= read -r asset; do
+            [ -n "$asset" ] || continue
+            assets+=("$asset")
+          done <<< "${{ steps.meta.outputs.linux_bridge_paths }}"
+
+          if [ "${{ steps.meta.outputs.has_notes_asset }}" = "true" ]; then
+            assets+=("${{ steps.meta.outputs.notes_asset_path }}")
+          fi
+
+          if [ "${{ steps.meta.outputs.has_appcast }}" = "true" ]; then
+            assets+=("${{ steps.meta.outputs.appcast_path }}")
+          fi
+
+          retry gh release upload "$RELEASE_TAG" \
+            "${assets[@]}" \
+            --repo "$repo" \
+            --clobber
+
+          retry gh release edit "$RELEASE_TAG" \
+            --repo "$repo" \
+            --title "${{ steps.meta.outputs.release_title }}" \
+            --notes-file "${{ steps.notes.outputs.file }}" \
+            --draft="$RELEASE_DRAFT" \
+            --prerelease="$RELEASE_PRERELEASE"
+
+          gh release view "$RELEASE_TAG" --repo "$repo"
+
+      - name: Cleanup signing material
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -f Config/LocalSecrets.xcconfig
+          rm -f "$RUNNER_TEMP/build_certificate.p12"
+          rm -f "$RUNNER_TEMP/sparkle_private_ed_key"
+          security delete-keychain "$RUNNER_TEMP/ping-island-signing.keychain-db" || true

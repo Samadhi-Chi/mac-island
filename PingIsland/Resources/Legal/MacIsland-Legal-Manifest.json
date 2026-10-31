@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "sparkle": {
+    "version": "2.10.1",
+    "revision": "ab7d71291238df6e0492143b120c9b696a35f603",
+    "repository": "https://github.com/sparkle-project/Sparkle",
+    "artifact": "https://github.com/sparkle-project/Sparkle/releases/download/2.10.1/Sparkle-for-Swift-Package-Manager.zip",
+    "artifactChecksum": "4c2e48a3e50ebcc2c88a58a4c7264a1a99c3c31857ce754357afb9cdb323022a"
+  },
+  "sections": [
+    {
+      "section": "Apache License 2.0",
+      "sha256": "d8b6cb6571c65d3dfaa4983b2ba20d19887ab5d1269e963eb3817ceb0c0e1447",
+      "source": "LICENSE.md"
+    },
+    {
+      "section": "Original Ping Island NOTICE",
+      "sha256": "ad648dd4a96456b339021d2c730ed535759432e9468c04d310ba602ef2c7b42a",
+      "source": "NOTICE"
+    },
+    {
+      "section": "Silkscreen Open Font License",
+      "sha256": "86c5e9c9382cdcc5948704fdfe60f2aa164a719746931219a42736ecd9cefbd3",
+      "source": "PingIsland/Resources/Fonts/Silkscreen-OFL.txt"
+    },
+    {
+      "section": "Sparkle 2.10.1 and included components",
+      "sha256": "389a4e4e9a32f059775b13a06e25a591445ba229d2838d26dd3e7c0c45127cfe",
+      "source": "Sparkle 2.10.1 SPM artifact LICENSE"
+    }
+  ]
+}

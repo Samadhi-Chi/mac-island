@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "delayMilliseconds": 100,
+      "sessionId": "fixture-codex-thread",
+      "client": "codex-desktop",
+      "workspace": "/tmp/mac-island-fixture/workspace",
+      "event": "SessionStart",
+      "status": "active",
+      "message": "Fixture: starting Mac Island"
+    },
+    {
+      "delayMilliseconds": 350,
+      "sessionId": "fixture-codex-thread",
+      "client": "codex-desktop",
+      "workspace": "/tmp/mac-island-fixture/workspace",
+      "event": "PreToolUse",
+      "status": "running_tool",
+      "message": "Fixture: building",
+      "tool": "Bash",
+      "toolUseId": "fixture-tool-1"
+    },
+    {
+      "delayMilliseconds": 350,
+      "sessionId": "fixture-cursor-session",
+      "client": "cursor",
+      "workspace": "/tmp/mac-island-fixture/workspace",
+      "event": "PermissionRequest",
+      "status": "waiting_for_approval",
+      "message": "Fixture: continue in Cursor",
+      "tool": "Bash",
+      "toolUseId": "fixture-cursor-tool"
+    },
+    {
+      "delayMilliseconds": 700,
+      "sessionId": "fixture-codex-thread",
+      "client": "codex-desktop",
+      "workspace": "/tmp/mac-island-fixture/workspace",
+      "event": "Stop",
+      "status": "completed",
+      "message": "Fixture: completed"
+    }
+  ]
+}

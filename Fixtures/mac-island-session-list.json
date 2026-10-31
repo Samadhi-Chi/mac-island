@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "storedCodexThreads": [
+    {"sessionId": "fixture-current-design", "workspace": "/tmp/sample-workspace", "nativeTitle": "Design the session list", "activitySecondsAgo": 20},
+    {"sessionId": "fixture-history-native", "workspace": "/tmp/sample-workspace", "nativeTitle": "Earlier review", "activitySecondsAgo": 3600},
+    {"sessionId": "fixture-history-untitled", "workspace": "/tmp/another-workspace", "nativeTitle": null, "preview": "Synthetic earlier activity, never a title", "activitySecondsAgo": 7200}
+  ],
+  "events": [
+    {"sessionId": "fixture-current-second", "client": "codex-desktop", "workspace": "/tmp/another-workspace", "event": "UserPromptSubmit", "status": "processing", "nativeTitle": "A different conversation", "message": "Synthetic progress preview"}
+  ]
+}

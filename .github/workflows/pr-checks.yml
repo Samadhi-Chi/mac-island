@@ -1,0 +1,41 @@
+name: Mac Island Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mac-island-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      # The app uses Swift 6.2+ default actor isolation; macos-15 defaults to Xcode 16.4.
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Report the selected toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+      - name: Run the shared product gate
+        env:
+          BUILD_ROOT: ${{ runner.temp }}/mac-island-build
+          BUILD_JOBS: '2'
+        run: ./scripts/test.sh
+      - name: Export content-free test summary
+        if: always()
+        run: |
+          python3 scripts/export-ci-test-summary.py "${{ runner.temp }}/mac-island-build/TestResults" "${{ runner.temp }}/mac-island-build/TestSummaries"
+          {
+            echo '### Content-free test counts'
+            echo '```json'
+            cat "${{ runner.temp }}/mac-island-build/TestSummaries/test-summary.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

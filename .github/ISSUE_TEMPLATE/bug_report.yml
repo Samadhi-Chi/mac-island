@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a reproducible Mac Island problem
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and observed behavior
+      description: Include steps using synthetic session data; omit private conversations and credentials.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Versions and surface
+      description: macOS, Mac Island, client version, docked or detached.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and acceptance criteria
+      description: Identify the checks that would confirm a fix. Distinguish real clients from fixtures.

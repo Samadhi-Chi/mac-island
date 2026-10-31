@@ -1,0 +1,3 @@
+// Optional: copy to Local.xcconfig for your local signing settings. Never commit that file.
+SHARED_BUNDLE_PREFIX = local.samadhi
+SHARED_DEVELOPMENT_TEAM =

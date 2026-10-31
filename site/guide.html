@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="把分散在不同客户端的任务状态，放到 Mac 的屏幕顶部。需要时展开，处理完收起。">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>使用指南 — Mac Island</title>
+  <link rel="icon" href="assets/app-icon.png">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="alternate" hreflang="en" href="en/guide.html">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header>
+    <a class="brand" href="index.html"><img src="assets/app-icon.png" width="36" height="36" alt="">Mac Island</a>
+    <nav aria-label="主导航">
+      <a href="guide.html">使用指南</a>
+      <a href="privacy.html">隐私</a>
+      <a href="support.html">支持</a>
+      <a href="en/guide.html" lang="en" hreflang="en">English</a>
+    </nav>
+  </header>
+  <main id="main"><div class="document"><p class="eyebrow">使用指南</p><h1>先看状态，<br>再回到工作。</h1><p class="lead">Mac Island 是本机观察工具。客户端负责执行任务，你决定何时查看和操作。</p><aside class="notice">目前是开发预览，尚无正式签名安装包。不要使用上游 Ping Island 安装包代替本项目，也不建议通过关闭 Gatekeeper 或移除隔离属性来安装开发产物。</aside>
+<nav class="contents" aria-label="本页目录"><a href="#start">开始使用</a><a href="#sessions">会话列表</a><a href="#compatibility">客户端接入</a><a href="#personal-agents">实验来源</a><a href="#limits">版本与限制</a></nav>
+<section id="start"><h2>开始使用</h2><ol><li>开发者可从本仓库构建。使用 Xcode 26+ / Swift 6.2+，打开 <code>PingIsland.xcodeproj</code>，选择 <code>MacIsland</code>；完整构建步骤见仓库 README。</li><li>首次引导选择屏幕顶部或悬浮 Island，了解客户端接入方式，再查看已有连接状态。</li><li>在集成设置中按需安装支持的 Hooks 或插件。引导不会自动安装集成、申请辅助功能权限或发送任务。</li><li>可以先体验独立监控演示。演示是合成数据，不进入真实会话与最近记录。</li></ol><p>本轮主要开发验证在 Apple Silicon 上进行。macOS 14+ 是部署目标，不代表最低系统与 Intel 已完成实机验收。</p></section>
+<section id="sessions"><h2>当前会话与最近记录</h2><p><strong>当前会话</strong>展示当前可观察的会话。标题优先使用客户端的原生名称，无法读取时明确提示，不拿项目目录或对话正文代替。</p><p><strong>最近记录</strong>是本机保存的路由元数据，不是聊天历史备份。清空它不会删除客户端历史。</p><p>点击一行用于选择；明确的打开按钮或 Enter 才执行导航。反馈会区分“已定位终端”“请求已发送”“只打开应用”与失败。打开链接被系统接受，不等于已确认正确会话显示。</p><p>CLI 续接目前仅提供预览与命令复制，尚未认证一键执行。回复、审批与任务执行始终留在原客户端。</p></section>
+<section id="compatibility"><h2>客户端接入方式</h2><div class="table-scroll"><table><thead><tr><th>客户端</th><th>当前来源</th><th>使用边界</th></tr></thead><tbody><tr><td>Codex</td><td>本机观察连接、可选 Hooks</td><td>依赖受支持的客户端可执行文件与协议；重连只重连 Island 的观察连接。</td></tr><tr><td>Cursor</td><td>本机数据库只读观察</td><td>数据库结构变化可能影响识别，不修改客户端记录。</td></tr><tr><td>Claude Code</td><td>CLI / Desktop Code Hooks</td><td>需要显式安装集成，审批仍在原客户端。</td></tr><tr><td>OpenCode / Hermes</td><td>官方事件插件及有限元数据恢复</td><td>按需安装；来源或数据库结构未知时停止相应恢复。</td></tr><tr><td>DeepSeek Harness</td><td>DSH CLI / 本机 Web UI 的官方实时事件</td><td>需要对应插件与配置。</td></tr></tbody></table></div><p class="small muted">这些是当前代码的接入边界，不是对所有客户端版本的兼容承诺。</p></section>
+<section id="personal-agents"><h2>Muse、Grok Bot 与 Dot</h2><p>Muse 4.1 / 6.0 与 Grok Bot 0.68.1 是默认关闭的实验性当前界面观察，需要分别启用来源，并主动授予辅助功能权限。</p><ul><li>每个当前可识别 Bot 上下文显示一张卡。不会因为一张卡内有多个活动，就算成多个会话。</li><li>Muse 6.0 当前只读取已验证英文布局中的名称；Muse 4.1 的 Activity 可收在 Bot 卡片内。</li><li>不保证发现所有后台 Bot、准确运行状态或恢复聊天。未知状态不计入运行数，也不进入最近记录。</li><li>版本未知、权限不足或界面不可读时，显示原因并停止对应读取。</li><li>Dot 目前只有应用入口，未验证独立任务来源。普通 Codex 会话仍按 Codex 显示。</li></ul></section>
+<section id="limits"><h2>遇到连接问题</h2><p>先确认只运行一份 Mac Island，再查看集成设置中的连接状态与最近成功读取。空列表可能只是没有活动会话。不要反复安装插件来代替检查来源、版本和权限。</p><p>当前不启用遥测、自动更新、远程 SSH 服务或收费解锁。已完成的开发检查不代替真实安装、权限迁移、多屏、睡眠恢复与长时间运行验收。</p><a class="button secondary" href="support.html">查看排查与反馈方式 →</a></section></div></main>
+  <footer>
+    <div><a class="brand" href="index.html">Mac Island</a><p>让状态可见，让桌面安静。</p><p class="small">独立社区项目，基于 Ping Island。与所支持客户端的厂商无隶属或背书关系。</p></div>
+    <nav aria-label="页脚导航">
+      <a href="privacy.html">隐私</a>
+      <a href="licenses.html">开源与许可</a>
+      <a href="support.html">支持</a>
+      <a href="https://github.com/Samadhi-Chi/mac-island">GitHub ↗</a>
+    </nav>
+  </footer>
+</body>
+</html>

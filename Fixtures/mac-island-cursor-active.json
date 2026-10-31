@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "sessionId": "fixture-cursor-active",
+      "client": "cursor",
+      "workspace": "/tmp/mac-island-fixture/workspace",
+      "event": "SessionStart",
+      "status": "active",
+      "message": "Fixture: active Cursor conversation"
+    },
+    {
+      "delayMilliseconds": 100,
+      "sessionId": "fixture-cursor-active",
+      "client": "cursor",
+      "workspace": "/tmp/mac-island-fixture/workspace",
+      "event": "PreToolUse",
+      "status": "running_tool",
+      "message": "Fixture: Cursor is working",
+      "tool": "Read"
+    }
+  ]
+}

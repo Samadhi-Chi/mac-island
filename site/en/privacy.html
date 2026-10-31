@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Bring session status from your coding assistants to the top of your Mac. Expand it when you need context, then get back to your work.">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>Privacy — Mac Island</title>
+  <link rel="icon" href="../assets/app-icon.png">
+  <link rel="stylesheet" href="../assets/site.css">
+  <link rel="alternate" hreflang="zh-CN" href="../privacy.html">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header>
+    <a class="brand" href="index.html"><img src="../assets/app-icon.png" width="36" height="36" alt="">Mac Island</a>
+    <nav aria-label="Main navigation">
+      <a href="guide.html">Guide</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a href="../privacy.html" lang="zh-CN" hreflang="zh-CN">简体中文</a>
+    </nav>
+  </header>
+  <main id="main"><div class="document"><p class="eyebrow">Privacy · October 31, 2026</p><h1>Local information.<br>Your choice of visibility.</h1>
+<p class="lead">The app and this website have different data boundaries. A local app does not mean that visiting its website creates no server records.</p>
+<section><h2>What the app reads</h2><p>Mac Island reads session state from supported clients through local hooks, observation interfaces, logs or databases. Native titles, conversations and progress details may be used in memory for display. Experimental Muse / Grok Bot sources read limited metadata from verified interfaces only after explicit opt-in and permission.</p><p>The app does not send messages, approve actions or start agent tasks. Current product policy disables telemetry, automatic updates and remote SSH services. Links and app-opening actions are handled by macOS and the destination app.</p></section>
+<section><h2>Connections and debugging</h2><p>This monitor-only product disables Cursor account-token access and direct network quota requests. Codex observation uses a private pipe to a process owned by Island. Bridge debug logs are disabled by default and exclude content, paths and session IDs even when enabled. Recognized owned Bridge logs are removed when logging is disabled and pruned by retention when enabled. Legacy analytics, unrecognized files and flat logs in old custom directories require manual removal.</p></section>
+<section><h2>What appears on screen</h2><ul><li><strong>Status only:</strong> client and generic status; native titles, Bot names, body text, paths and session IDs are hidden.</li><li><strong>Titles:</strong> adds native session titles or Bot names; body text, activity labels, paths and IDs remain hidden.</li><li><strong>Details:</strong> shows available local progress. Full paths and native IDs belong in explicitly opened detail views.</li></ul><p>New installs default to titles. Existing installations preserve their prior detail behavior during migration. Temporary hiding affects Island only and restores the selected level. It neither covers other apps nor stops observation.</p></section>
+<section><h2>Local retention and removal</h2><p>Recent routing metadata defaults to seven days and at most 200 entries. Options include 24 hours / 100 entries, this run only, or disabled. Records include client, working directory, native session ID and activity time, but no conversation text, prompts, replies or derived titles.</p><p>Clearing recent records does not delete the client’s history or separate association and usage caches. Old diagnostic exports are not automatically deleted. System backups, swap and storage owned by other clients are outside Mac Island’s control.</p></section>
+<section><h2>Permissions and diagnostics</h2><p>You explicitly grant Accessibility permission for experimental sources and can revoke it in System Settings. Hook/plugin installation is an explicit action with local backups and atomic writes. A development build does not authorize installation or changes to client configuration.</p><p>User-triggered diagnostic summaries contain versions, fixed connection states and failure categories. They do not copy client configuration, logs, project paths, session titles, conversations or credentials. Exports stay local and are not sent automatically. Review an export before sharing it.</p></section>
+<section><h2>This website</h2><p>GitHub Pages hosts this website. It uses local static assets, with no analytics, ads, cookies or browser storage added by this project. It does not connect to your clients or read your sessions.</p><p>GitHub records visitor IP addresses for hosting security. Following external links brings you under the destination service’s own privacy rules. See <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#data-collection">GitHub Pages data collection</a> and the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</p></section>
+<section><h2>Privacy questions</h2><p>For ordinary questions, follow the <a href="support.html">support guide</a>. Do not put private conversations, credentials, sensitive screenshots or raw diagnostics in public issues. For security reports, read the repository <a href="https://github.com/Samadhi-Chi/mac-island/security/policy">Security Policy</a> first.</p></section></div></main>
+  <footer>
+    <div><a class="brand" href="index.html">Mac Island</a><p>Visible progress. A quieter desktop.</p><p class="small">An independent community project based on Ping Island. Not affiliated with or endorsed by the makers of supported clients.</p></div>
+    <nav aria-label="Footer navigation">
+      <a href="privacy.html">Privacy</a>
+      <a href="licenses.html">Source & licenses</a>
+      <a href="support.html">Support</a>
+      <a href="https://github.com/Samadhi-Chi/mac-island">GitHub ↗</a>
+    </nav>
+  </footer>
+</body>
+</html>

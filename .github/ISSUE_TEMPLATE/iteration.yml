@@ -1,0 +1,20 @@
+name: Iteration
+description: Propose a focused product increment
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome and scope
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and validation
+      description: Include supported client versions and runtime boundaries where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and limitations

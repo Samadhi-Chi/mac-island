@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="把分散在不同客户端的任务状态，放到 Mac 的屏幕顶部。需要时展开，处理完收起。">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>隐私说明 — Mac Island</title>
+  <link rel="icon" href="assets/app-icon.png">
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="alternate" hreflang="en" href="en/privacy.html">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header>
+    <a class="brand" href="index.html"><img src="assets/app-icon.png" width="36" height="36" alt="">Mac Island</a>
+    <nav aria-label="主导航">
+      <a href="guide.html">使用指南</a>
+      <a href="privacy.html">隐私</a>
+      <a href="support.html">支持</a>
+      <a href="en/privacy.html" lang="en" hreflang="en">English</a>
+    </nav>
+  </header>
+  <main id="main"><div class="document"><p class="eyebrow">隐私说明 · 更新于 2026 年 10 月 31 日</p><h1>信息留在本机，<br>显示由你决定。</h1><p class="lead">应用与网站具有不同的数据边界。下面分别说明，避免把“本机应用”误解为“访问网站也没有服务器记录”。</p>
+<section><h2>应用读取什么</h2><p>Mac Island 从受支持客户端的本机 Hooks、观察接口、日志或数据库读取会话状态。原生标题、对话和进度详情可在内存中用于展示。Muse / Grok Bot 的实验来源仅在显式启用并授权后读取已验证界面中的有限元数据。</p><p>应用不代发消息、不代做审批、不启动代理任务。当前产品策略禁用遥测、自动更新和远程 SSH 服务；用户点击外部链接或打开客户端，会交给 macOS 和相应应用处理。</p></section>
+<section><h2>连接与调试</h2><p>只读产品禁用 Cursor 账号令牌读取和直接联网查询额度。Codex 使用 Island 自己启动的观察进程的私有管道。Bridge 调试日志默认关闭，启用后也不记录正文、路径或会话 ID；Bridge 会按关闭或保留期策略清理可识别的自有日志；旧逐会话统计、未知文件和旧自定义目录中的平铺日志仍需手动删除。</p></section>
+<section><h2>屏幕上显示什么</h2><ul><li><strong>只显示状态：</strong>客户端与通用状态；隐藏原生标题、Bot 名称、正文、路径与会话 ID。</li><li><strong>显示标题：</strong>增加原生会话标题或 Bot 名称；仍不显示正文、活动标签、路径或 ID。</li><li><strong>显示详情：</strong>显示可读的本机进度；完整路径与原生 ID 位于明确打开的详情中。</li></ul><p>新安装默认显示标题；已有安装迁移时保留原先的详情方式。临时隐藏只影响 Island，恢复时回到原选择；不遮挡其他应用，不停止底层读取。</p></section>
+<section><h2>本机保留与删除</h2><p>最近记录默认保留路由元数据 7 天、最多 200 条。可改为 24 小时 / 100 条、仅本次运行或关闭。它包括客户端、工作目录、原生会话 ID 与活动时间，不包含对话正文、提示词、回复或派生标题。</p><p>清空最近记录不删除客户端历史，也不会一并清空独立的会话关联或额度缓存。旧版本留下的诊断文件不会被新版自动删除；系统备份、交换空间与客户端自身存储不受 Mac Island 控制。</p></section>
+<section><h2>权限与诊断</h2><p>实验来源的辅助功能权限由你主动授予，可以在系统设置中撤回。安装 Hooks / 插件是显式操作，使用本机备份与原子写入。开发构建不代表你已授权安装或修改客户端配置。</p><p>主动导出的诊断摘要只包含版本、固定连接状态和故障分类，不复制客户端配置、日志、项目路径、会话标题、对话或凭据。导出的文件留在本机，不自动发送；分享前仍应自行检查。</p></section>
+<section><h2>这个网站</h2><p>本网站由 GitHub Pages 托管，页面使用本地静态资源；没有我们添加的分析脚本、广告、Cookie 或浏览器本地存储，也不读取你的客户端或会话。</p><p>GitHub 作为托管服务会为安全目的记录访问者 IP 地址。点击 GitHub、Apple 或上游链接后，适用目标服务自己的隐私规则。参见 <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#data-collection">GitHub Pages 数据说明</a>与 <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub 隐私声明</a>。</p></section>
+<section><h2>反馈与隐私问题</h2><p>普通问题可按<a href="support.html">支持页面</a>反馈。公开 Issue 不适合提交真实会话、截图中的私人信息、密钥或完整诊断日志。安全问题请先查看仓库 <a href="https://github.com/Samadhi-Chi/mac-island/security/policy">Security Policy</a> 中的私密报告说明。</p></section></div></main>
+  <footer>
+    <div><a class="brand" href="index.html">Mac Island</a><p>让状态可见，让桌面安静。</p><p class="small">独立社区项目，基于 Ping Island。与所支持客户端的厂商无隶属或背书关系。</p></div>
+    <nav aria-label="页脚导航">
+      <a href="privacy.html">隐私</a>
+      <a href="licenses.html">开源与许可</a>
+      <a href="support.html">支持</a>
+      <a href="https://github.com/Samadhi-Chi/mac-island">GitHub ↗</a>
+    </nav>
+  </footer>
+</body>
+</html>

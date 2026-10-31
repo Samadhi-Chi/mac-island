@@ -1,0 +1,2 @@
+// Local, monitor-only Mac Island: no release feed or telemetry endpoints.
+#include "SharedWorkspace.xcconfig"

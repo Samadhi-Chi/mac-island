@@ -1,0 +1,4 @@
+// Portable defaults. Optional Local.xcconfig is private to this machine.
+SHARED_BUNDLE_PREFIX = local.samadhi
+SHARED_DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"

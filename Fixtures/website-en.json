@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "storedCodexThreads": [
+    {
+      "sessionId": "website-design",
+      "workspace": "/Projects/Example",
+      "nativeTitle": "Polish the website",
+      "activitySecondsAgo": 90
+    }
+  ],
+  "events": [
+    {
+      "sessionId": "website-release",
+      "client": "codex-desktop",
+      "workspace": "/Projects/Example",
+      "event": "UserPromptSubmit",
+      "status": "processing",
+      "nativeTitle": "Review the release checklist",
+      "message": "Checking the documentation"
+    }
+  ]
+}

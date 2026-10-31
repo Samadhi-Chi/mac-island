@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Bring session status from your coding assistants to the top of your Mac. Expand it when you need context, then get back to your work.">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>Guide — Mac Island</title>
+  <link rel="icon" href="../assets/app-icon.png">
+  <link rel="stylesheet" href="../assets/site.css">
+  <link rel="alternate" hreflang="zh-CN" href="../guide.html">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header>
+    <a class="brand" href="index.html"><img src="../assets/app-icon.png" width="36" height="36" alt="">Mac Island</a>
+    <nav aria-label="Main navigation">
+      <a href="guide.html">Guide</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a href="../guide.html" lang="zh-CN" hreflang="zh-CN">简体中文</a>
+    </nav>
+  </header>
+  <main id="main"><div class="document"><p class="eyebrow">Guide</p>
+<h1>Check the status.<br>Return to your work.</h1>
+<p class="lead">Mac Island observes local activity. Your clients execute the tasks; you decide when to view and act.</p>
+<aside class="notice">An official signed installer is not available yet. Do not substitute an upstream Ping Island installer or disable Gatekeeper to use development builds.</aside>
+<nav class="contents" aria-label="On this page"><a href="#start">Getting started</a><a href="#sessions">Sessions</a><a href="#compatibility">Connections</a><a href="#personal-agents">Experimental sources</a></nav>
+<section id="start"><h2>Getting started</h2>
+<ol><li>Developers can build the repository using Xcode 26+ and Swift 6.2+. Open <code>PingIsland.xcodeproj</code> and select <code>MacIsland</code>. Follow the repository README for the build and test commands.</li>
+<li>The first-run guide introduces the top-of-screen and floating surfaces, connections and existing connection health.</li>
+<li>Install supported hooks or plugins explicitly in Integrations. Onboarding does not install integrations, request Accessibility permission or start a task.</li>
+<li>Try the separate monitor demonstration. Its synthetic examples do not enter real sessions or recent records.</li></ol>
+<p>Current development validation primarily uses Apple Silicon. A macOS 14 deployment target is not evidence of minimum-OS or Intel hardware acceptance.</p></section>
+<section id="sessions"><h2>Current sessions and recent records</h2>
+<p><strong>Current sessions</strong> show observable sessions and prefer native client titles. Unavailable titles are identified as such; folders and conversation text are not substituted for titles.</p>
+<p><strong>Recent records</strong> contain local routing metadata, not a backup of chat history. Clearing them does not delete history in the original client.</p>
+<p>Click a row to select it. An explicit open action or Enter requests navigation. Feedback distinguishes a located terminal, a sent request, opening only the app, and failure. macOS accepting a link does not confirm that the correct conversation is visible.</p>
+<p>CLI continuation currently offers a preview and command copy. One-click execution is not certified. Replies, approvals and task execution remain in the original client.</p></section>
+<section id="compatibility"><h2>Client connections</h2><div class="table-scroll"><table><thead><tr><th>Client</th><th>Current source</th><th>Boundary</th></tr></thead><tbody>
+<tr><td>Codex</td><td>Local observation connection; optional hooks</td><td>Requires a supported executable and protocol. Reconnecting affects only Island’s observation connection.</td></tr>
+<tr><td>Cursor</td><td>Read-only local database observation</td><td>Schema changes may affect recognition. Client records are not modified.</td></tr>
+<tr><td>Claude Code</td><td>CLI / Desktop Code hooks</td><td>Integration installation is explicit. Approvals stay in the original client.</td></tr>
+<tr><td>OpenCode / Hermes</td><td>Official event plugins and limited metadata recovery</td><td>Install only when needed. Unknown sources or schemas stop the corresponding recovery path.</td></tr>
+<tr><td>DeepSeek Harness</td><td>Official live events from DSH CLI / local Web UI</td><td>Requires the corresponding plugin and configuration.</td></tr>
+</tbody></table></div><p class="small">These are implementation boundaries, not a promise of compatibility with every client version.</p></section>
+<section id="personal-agents"><h2>Muse, Grok Bot and Dot</h2>
+<p>Muse 4.1 / 6.0 and Grok Bot 0.68.1 are experimental current-interface sources, disabled by default. Enable each source explicitly and grant Accessibility permission yourself.</p>
+<ul><li>One card represents a currently identifiable Bot context. Multiple activities inside a card do not become multiple sessions.</li><li>Muse 6.0 reads names only from its verified English layout. Muse 4.1 Activity entries can appear inside the Bot card.</li><li>Background discovery, accurate execution state and conversation recovery are not guaranteed. Unknown activity is excluded from running counts and recent records.</li><li>Unknown versions, missing permission or unreadable interfaces produce an explicit status and stop the affected read.</li><li>Dot has an app entry only; an independent task source has not been verified. Ordinary Codex sessions remain labeled Codex.</li></ul></section>
+<section><h2>Connection troubleshooting</h2><p>First check that only one Mac Island instance is running. Review connection health and the last successful read in Integrations. An empty list can mean there is no active session. Check the source, version and permission before reinstalling plugins.</p><p>Telemetry, automatic updates, remote SSH services and paid unlocking are not enabled. Development checks do not replace installation, permission migration, multi-display, sleep/wake and long-duration acceptance.</p><a class="button secondary" href="support.html">Get help →</a></section></div></main>
+  <footer>
+    <div><a class="brand" href="index.html">Mac Island</a><p>Visible progress. A quieter desktop.</p><p class="small">An independent community project based on Ping Island. Not affiliated with or endorsed by the makers of supported clients.</p></div>
+    <nav aria-label="Footer navigation">
+      <a href="privacy.html">Privacy</a>
+      <a href="licenses.html">Source & licenses</a>
+      <a href="support.html">Support</a>
+      <a href="https://github.com/Samadhi-Chi/mac-island">GitHub ↗</a>
+    </nav>
+  </footer>
+</body>
+</html>

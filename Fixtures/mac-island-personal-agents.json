@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "events": [],
+  "personalAgents": [
+    { "client": "grokBot", "agentName": "Example Bot" },
+    { "client": "muse", "agentName": "Example Muse", "activityLabels": [
+      "Example research Finished summary 10:12 am",
+      "Review a failed build example Successful analysis 10:06 am",
+      "Example research Finished summary 10:12 am"
+    ] }
+  ]
+}

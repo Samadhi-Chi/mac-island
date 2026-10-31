@@ -1,0 +1,4 @@
+# Shared project defaults only. Authentication, plugins, MCP secrets, and
+# personal paths belong in each macOS user's ~/.codex/config.toml.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"

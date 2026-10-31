@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "storedCodexThreads": [
+    {
+      "sessionId": "website-design",
+      "workspace": "/Projects/Example",
+      "nativeTitle": "完善项目网页",
+      "activitySecondsAgo": 90
+    }
+  ],
+  "events": [
+    {
+      "sessionId": "website-release",
+      "client": "codex-desktop",
+      "workspace": "/Projects/Example",
+      "event": "UserPromptSubmit",
+      "status": "processing",
+      "nativeTitle": "检查发布清单",
+      "message": "正在检查项目文档"
+    }
+  ]
+}
